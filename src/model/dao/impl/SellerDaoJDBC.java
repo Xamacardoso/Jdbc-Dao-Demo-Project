@@ -6,11 +6,9 @@ import model.dao.SellerDao;
 import model.entities.Department;
 import model.entities.Seller;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 public class SellerDaoJDBC implements SellerDao {
     private Connection conn;
@@ -100,7 +98,42 @@ public class SellerDaoJDBC implements SellerDao {
 
     @Override
     public List<Seller> findAll() {
-        return List.of();
+        ResultSet result = null;
+        Statement stmt = null;
+        List<Seller> sellers = new ArrayList<>();
+
+        try {
+            stmt = conn.createStatement();
+
+            result = stmt.executeQuery("""
+            SELECT s.*, d.Name as DepName FROM seller s
+            INNER JOIN department d ON s.DepartmentId = d.Id
+            ORDER BY Name""");
+
+            // Map for department instantiation control
+            Map<Integer, Department> departmentMap = new HashMap<>();
+
+            while (result.next()) {
+                Department dep = departmentMap.get(result.getInt("DepartmentId"));
+
+                // If the department hasn't been instantiated before, instantiate it and puts into the hashmap
+                if (dep == null) {
+                    dep = instantiateDepartment(result);
+                    departmentMap.put(dep.getId(), dep);
+                }
+
+                Seller retrievedSeller = instantiateSeller(result, dep);
+                sellers.add(retrievedSeller);
+            }
+
+            return sellers;
+
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(stmt);
+            DB.closeResultSet(result);
+        }
     }
 
     @Override
