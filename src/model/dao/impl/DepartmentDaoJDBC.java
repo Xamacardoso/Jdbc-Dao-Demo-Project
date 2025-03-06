@@ -94,6 +94,25 @@ public class DepartmentDaoJDBC implements DepartmentDao {
 
     @Override
     public void updateById(Department department) {
+        PreparedStatement ps = null;
+
+        try {
+            ps = conn.prepareStatement("""
+            UPDATE department SET Name = ?
+            WHERE Id = ?""", Statement.RETURN_GENERATED_KEYS);
+
+            ps.setString(1, department.getName());
+            ps.setInt(2, department.getId());
+
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new DbException("No rows affected");
+            }
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(ps);
+        }
     }
 
     @Override
