@@ -23,5 +23,14 @@ public class Program2 {
         departmentDao.insert(newDepartment);
         System.out.println("Insertion done! New department: " + newDepartment);
 
+        System.out.println("\n==== TEST 4 - DELETING A DEPARTMENT ====");
+        // departmentDao.deleteById(7);
+        // System.out.println("Deleted!");
+
+        System.out.println("\n==== TEST 5 - UPDATING A DEPARTMENT ====");
+        Department updatedDepartment = departmentDao.findById(8).get();
+        updatedDepartment.setName("Magic");
+        departmentDao.updateById(updatedDepartment);
+        System.out.println("Updated department: " + updatedDepartment);
     }
 }
