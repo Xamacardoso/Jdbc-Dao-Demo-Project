@@ -1,10 +1,14 @@
 package model.dao.impl;
 
 import db.DB;
+import db.DbException;
 import model.dao.DepartmentDao;
 import model.entities.Department;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +26,25 @@ public class DepartmentDaoJDBC implements DepartmentDao {
 
     @Override
     public Optional<Department> findById(Integer id) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            ps = conn.prepareStatement("SELECT * FROM department WHERE Id = ?");
+            ps.setInt(1, id);
+
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                Department retrievedDepartment = instantiateDepartment(rs);
+                return Optional.of(retrievedDepartment);
+            }
+        } catch (SQLException e){
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(ps);
+            DB.closeResultSet(rs);
+        }
+
         return Optional.empty();
     }
 
@@ -38,5 +61,11 @@ public class DepartmentDaoJDBC implements DepartmentDao {
     @Override
     public void deleteById(Integer id) {
 
+    }
+
+    private static Department instantiateDepartment(ResultSet rs) throws SQLException {
+        Integer id = rs.getInt("Id");
+        String name = rs.getString("Name");
+        return new Department(id, name);
     }
 }
