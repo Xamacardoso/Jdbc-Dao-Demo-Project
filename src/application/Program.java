@@ -35,5 +35,9 @@ public class Program {
         seller.setName("Gregorius Greenus");
         sellerDao.update(seller);
         System.out.println("Updated! New seller: " + seller.toString());
+
+        System.out.println("\n===== TEST 6 - DELETING A SELLER ====");
+        sellerDao.deleteById(11);
+        System.out.println("Deleted!");
     }
 }
